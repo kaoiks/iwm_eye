@@ -1,16 +1,26 @@
-# This is a sample Python script.
+import cv2
+import copy
+import matplotlib
+import numpy as np
+from skimage import filters
+from matplotlib import pyplot as plt
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+def main():
+    image = cv2.imread('images/oko2.png')
+    # image = cv2.imread('images/11_h.jpg')
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+    blurred_image = cv2.GaussianBlur(image, (5, 5), 2)
+    edges = cv2.Canny(blurred_image, 5, 18)
+    negative_image = 255 - edges
+
+    # Display the negative image
+    plt.imshow(negative_image, cmap='gray')
+    plt.title('Negative Image')
+    plt.axis('off')
+    plt.show()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    main()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
