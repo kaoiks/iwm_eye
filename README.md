@@ -8,3 +8,5 @@ To achieve this goal, we have implemented a simplified approach that utilizes th
 Building upon the image blurring step, the next stage involves the utilization of the Canny edge detection method. This technique assists in identifying the edges and boundaries of the blood vessels within the retinal image, further contributing to accurate vessel detection.
 
 Through the combination of these techniques, our application provides an automated solution for the detection of retinal DNA vessels, facilitating a comprehensive analysis of the retinal health and aiding in the diagnosis of various ocular conditions.
+
+![Screenshot of a retinal dna vessels detection](screen.png)
