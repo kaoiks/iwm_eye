@@ -8,6 +8,8 @@ opencv-python = "*"
 matplotlib = "*"
 numpy = "*"
 scikit-image = "*"
+scikit-learn = "*"
+imblearn = "*"
 
 [dev-packages]
 
