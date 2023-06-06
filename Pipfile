@@ -10,6 +10,7 @@ numpy = "*"
 scikit-image = "*"
 scikit-learn = "*"
 imblearn = "*"
+jupyter = "*"
 
 [dev-packages]
 

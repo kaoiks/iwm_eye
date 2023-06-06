@@ -20,6 +20,51 @@ import cv2
 from sklearn.preprocessing import StandardScaler
 
 
+def confusion_matrix(original_image, predicted_image, expected_image):
+    white = (255, 255, 255)
+    red = (255, 0, 0)
+    green = (0, 255, 0)
+    purple = (255, 0, 255)
+    conf_matrix = np.zeros(predicted_image.shape)
+
+    predicted_mask = (predicted_image != 0)
+    model_mask = (expected_image != 0)
+
+    conf_matrix[predicted_mask & model_mask] = green
+    conf_matrix[predicted_mask & ~model_mask] = red
+    conf_matrix[~predicted_mask & model_mask] = purple
+    conf_matrix[~predicted_mask & ~model_mask] = white
+
+    return conf_matrix
+
+
+def confusion_matrix2(original_image, predicted_image, expected_image):
+    white = (255, 255, 255)
+    red = (255, 0, 0)
+    green = (0, 255, 0)
+    purple = (255, 0, 255)
+    conf_matrix = np.array(predicted_image.shape[:2])
+    result_array = []
+    for i in range(predicted_image.shape[0]):
+        result_row = []
+        for j in range(predicted_image.shape[1]):
+            if predicted_image[i, j] and expected_image[i, j]:
+                result_row.append(green)
+                # conf_matrix[i, j] = green  # Green
+            elif predicted_image[i, j] and not expected_image[i, j]:
+                result_row.append(red)
+                # conf_matrix[i, j] = red  # Red
+            elif not predicted_image[i, j] and expected_image[i, j]:
+                result_row.append(purple)
+                # conf_matrix[i, j] = purple  # Purple
+            else:
+                result_row.append(white)
+                # conf_matrix[i, j] = white  # White
+        result_array.append(result_row)
+
+    return np.array(result_array)
+
+
 def extract_patches(image, patch_size=5):
     # Splitting the image into patches
 
@@ -53,17 +98,13 @@ def extract_features(patch_flat):
     variance = np.var(patch_flat)
     moments = stats.moment(patch_flat, moment=[1, 2, 3])
     image_moments = list(cv2.moments(patch_flat).values())
-    # hu_moments = cv2.HuMoments(moments).flatten()
-    # mean = np.mean(patch_flat, axis=0)
-    # std = np.std(patch_flat, axis=0)
-    # moments = cv2.moments(patch_flat)
     hu_moments = cv2.HuMoments(moments).flatten()
 
     return [variance, *moments, *image_moments, *hu_moments]
 
 
 def train():
-    study_set = ['01_h', '02_h', '03_h']#, '04_h', '05_h', '06_h', '07_h']  # , '08_h', '09_h', '10_h']
+    study_set = ['01_h', '02_h', '03_h']#, '04_h']#, '05_h', '06_h', '07_h', '08_h', '09_h', '10_h']
 
     datasets = []
     mask_pixels = []
@@ -72,8 +113,8 @@ def train():
         image = cv2.imread(f'images/{image_path}.jpg')
         mask = cv2.imread('healthy_fovmask/01_h_mask.tif')
         expected_result_mask = cv2.imread(f'healthy_manualsegm/{image_path}.tif')
-        desired_width = 2000
-        desired_height = 1800
+        desired_width = 3500
+        desired_height = 2300
 
         # Resize all images
         image_2 = cv2.resize(copy.deepcopy(image), (desired_width, desired_height))
@@ -98,7 +139,7 @@ def train():
         datasets.extend(dataset)
         mask_pixels.extend(result_patches_pixels)
 
-    X_train, X_test, y_train, y_test = train_test_split(datasets, mask_pixels, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(datasets, mask_pixels, test_size=0.3)
     print('datasets:', len(datasets), 'x', len(datasets[0]))
     print('mask_pixels:', len(mask_pixels))
 
@@ -107,17 +148,8 @@ def train():
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    force_training = True
-    try:
-        if force_training:
-            raise FileNotFoundError
-        # classifier = load_classifier("classifier.pkl")
-        classifier = joblib.load('classifier.pkl')
-        print("Model loaded from file...")
-    except FileNotFoundError:
-        print("Training...")
-        classifier = RandomForestClassifier(n_estimators=150, n_jobs=-1)  # 0.793
-        classifier.fit(X_train_scaled, y_train)
+    classifier = RandomForestClassifier(n_estimators=250, n_jobs=-1)
+    classifier.fit(X_train_scaled, y_train)
 
     # Klasyfikacja danych testowych
     print("Predicting...")
@@ -132,26 +164,35 @@ def train():
     #     pickle.dump(classifier, file)
     joblib.dump(classifier, 'classifier.pkl', compress=3)
 
-def main():
 
+def main():
     # train()
 
     classifier = joblib.load('classifier.pkl')
     scaler = joblib.load('scaler.bin')
 
-    image_2 = cv2.imread(f'images/15_h.jpg')
-    mask = cv2.imread('healthy_fovmask/15_h_mask.tif')
-    expected_result_mask = cv2.imread(f'healthy_manualsegm/15_h.tif')
-    desired_width = 1800
-    desired_height = 1500
+    image_2 = cv2.imread(f'images/12_h.jpg')
+    mask = cv2.imread('healthy_fovmask/12_h_mask.tif')
+    expected_result_mask = cv2.imread(f'healthy_manualsegm/12_h.tif')
+
+    image_2 = cv2.resize(copy.deepcopy(image_2), (2000, 1500))
+
+    height, width, channels = image_2.shape
+    desired_width = width
+    desired_height = height
 
     # Resize all images
-    # image_2 = cv2.resize(copy.deepcopy(image), (desired_width, desired_height))
-    mask = cv2.resize(mask, (desired_width, desired_height))
-    expected_result_mask = cv2.resize(expected_result_mask, (desired_width, desired_height))
+
+    # mask = cv2.resize(mask, (desired_width // 5, desired_height // 5))
+    # expected_result_mask = cv2.resize(expected_result_mask, (desired_height, desired_width))
 
     green_channel_image = image_2[:, :, 1]
-    expected_result = expected_result_mask[:, :, 1]
+    green_channel_mask = mask[:, :, 1]
+    expected_result_mask = expected_result_mask[:, :, 1]
+    # expected_result = expected_result_mask[:, :, 1]
+
+    expected_result_mask = cv2.resize(expected_result_mask, (desired_width // 5, desired_height // 5))
+
     image_contrasted = cv2.equalizeHist(green_channel_image)
 
     #
@@ -162,7 +203,7 @@ def main():
     patches = extract_patches(image_contrasted)
 
     # Middle pixel from mask patches
-    result_patches_pixels = extract_expect_central_pixel(expected_result)
+    result_patches_pixels = extract_expect_central_pixel(expected_result_mask)
 
     dataset = []
     for patch in patches:
@@ -183,11 +224,17 @@ def main():
             y_pred = y_pred[1:]
 
     normalized_image = (new_image / np.max(new_image)) * 255
+    # normalized_image[green_channel_mask == 0] = 0
+
     pil_image = Image.fromarray(normalized_image)
     pil_image = pil_image.convert('L')
     pil_image.save("result.png")
-    pil_image.show()
 
+    differences = confusion_matrix2(image_2, normalized_image, expected_result_mask)
+    plt.imshow(differences)
+    plt.show()
+
+    pil_image.show()
 
 
 if __name__ == '__main__':

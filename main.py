@@ -99,9 +99,9 @@ def image_metrics(predicted, model):
 
 def main():
     # Wymagania 3.0
-    image = cv2.imread('images/01_h.jpg')
-    mask = cv2.imread('healthy_fovmask/01_h_mask.tif')
-    expected_result = cv2.imread('healthy_manualsegm/01_h.tif')
+    image = cv2.imread('images/12_h.jpg')
+    mask = cv2.imread('healthy_fovmask/12_h_mask.tif')
+    expected_result = cv2.imread('healthy_manualsegm/12_h.tif')
     desired_width = 1200
     desired_height = 800
 
@@ -133,68 +133,6 @@ def main():
     plt.show()
 
     image_metrics(predicted_image, expected_result)
-    # Wymagania 4.0
-    #
-    #
-    # a_image = np.array(image)
-    # a_binary_labels = np.array(expected_result)
-    # size = 5
-    #
-    # a_image = cv2.resize(a_image, (desired_width, desired_height))
-    # a_binary_labels = cv2.resize(a_binary_labels, (desired_width, desired_height))
-    #
-    # a_image = cv2.cvtColor(a_image, cv2.COLOR_RGB2GRAY)
-    #
-    # parts = slice(a_image, size)
-    # result = slice(a_binary_labels, size)
-    #
-    # samples = sample(range(0, len(parts)), len(parts) // 12)
-    #
-    # parameters, decisions = list(), list()
-    #
-    # for x in samples:
-    #     parameters.append(features(parts[x]))
-    #     decisions.append(result[x][size // 2][size // 2])
-    # decisions = list(np.squeeze(np.asarray(decisions)))
-    # decisions = np.logical_and(decisions, decisions)
-    #
-    # X = parameters[:len(parameters) // 4]
-    # X_test = parameters[len(parameters) // 4:]
-    #
-    # Y = decisions[:len(parameters) // 4]
-    # Y_test = decisions[len(parameters) // 4:]
-    #
-    # model = KNeighborsClassifier(n_neighbors=3)
-    #
-    # model.fit(X, Y)
-    #
-    # prediction = model.predict(X_test)
-    # result1 = np.sum(prediction == Y_test) / len(prediction)
-    #
-    # print('-' * 20)
-    # print(result1)
-    # print(f'Result of test: {round(result1, 9) * 100}%')
-    # print('-' * 20)
-    #
-    # image3 = cv2.imread('images/04_h.jpg')
-    # a_image3 = np.array(image3)
-    # a_image3 = cv2.resize(a_image3, (desired_width, desired_height))
-    # a_image3 = cv2.cvtColor(a_image3, cv2.COLOR_RGB2GRAY)
-    #
-    # knns = process_picture(model, a_image3, size)
-    #
-    # knns = 255 - knns
-    # #
-    # # # plt.subplot(1, 2, 1)
-    # # # plt.imshow(negative_image, cmap='gray')
-    # # # plt.title('Image filtered with Canny')
-    # # # plt.axis('off')
-    # #
-    # # plt.subplot(1, 2, 2)
-    # plt.imshow(knns, cmap='gray')
-    # plt.title('Image filtered with KNNs')
-    # plt.axis('off')
-    # plt.show()
 
 
 if __name__ == '__main__':
