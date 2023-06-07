@@ -1,3 +1,4 @@
 Pipfile.lock
 classifier.pkl
 scaler.bin
+classifier.bin
